@@ -33,6 +33,25 @@ def draw_star(cr, x, y, x_radius,y_radius):
     cr.line_to(x+x_radius/2,y)
     cr.line_to(x+x_radius,y+y_radius)
     cr.close_path()
+def draw_wiggle_curve(cr, x, y, x_radius,y_radius):
+    r1 = 34
+    r2 = 5
+    r3 = 8
+    cx1 = r2+r3
+    cx3 = r1+r2
+    cx2 = r1-r3
+    cr.save()
+    cr.translate(x,y)
+    cr.scale(x_radius/(r1+r2+r3),y_radius/(r1))
+    cr.move_to(-cx1, r1)
+    cr.curve_to(-cx1+r1, r1, cx2-r2, -r2/2, cx2, -r2/2)
+    cr.curve_to(cx2+r2, -r2/2, cx3-r3, r3, cx3, r3)
+    cr.curve_to(cx3+r3, r3, cx1+r1, -r1, cx1, -r1)
+    cr.curve_to(cx1-r1, -r1, -cx2+r2, r2/2, -cx2, r2/2)
+    cr.curve_to(-cx2-r2, r2/2, -cx3+r3, -r3, -cx3, -r3)
+    cr.curve_to(-cx3-r3, -r3, -cx1-r1, r1, -cx1, r1)
+    cr.close_path()
+    cr.restore()
 def draw_wiggle(cr, x, y, x_radius,y_radius):
     r1 = 38
     r2 = 8
@@ -57,8 +76,8 @@ def draw_wiggle(cr, x, y, x_radius,y_radius):
     cr.close_path()
     cr.restore()
 y_positions=[[0.5],[0.36,0.64],[0.22,0.5,0.78],[0.17,0.39,0.61,0.83]]
-shapes = [draw_diamond,draw_oval,draw_wiggle,draw_star]
-shape_y_rad = [0.09,0.076,0.08,0.08]
+shapes = [draw_diamond,draw_oval,draw_wiggle_curve,draw_star]
+shape_y_rad = [0.09,0.076,0.082,0.08]
 
 colours = [[0x7d/255.0,0xed/255.0,0x05/255.0],[0x05/255.0,0xa2/255.0,0xed/255.0],[0xed/255.0,0x05/255.0,0x91/255.0],[0xed/255.0,0xb8/255.0,0x05/255.0]]#[[0.3,0.6,0.9],[0.9,0.2,0.2],[0.2,0.9,0.4]]
 def stroke_normal(ctx,w,col):
@@ -67,26 +86,26 @@ def stroke_normal(ctx,w,col):
     ctx.stroke()
 def stroke2(ctx,w,col):
     ctx.set_dash([1])
-    ctx.set_line_width(w)
+    ctx.set_line_width(w*0.8)
     ctx.set_source_rgb(1, 1, 1)
     ctx.stroke_preserve()
     ctx.set_source_rgb(col[0],col[1],col[2])
-    ctx.set_line_width(w*0.8)
+    ctx.set_line_width(w*0.6)
     ctx.stroke()
 def stroke_dash(ctx,w,col):
     ctx.set_dash([1])
-    ctx.set_line_width(w)
+    ctx.set_line_width(w*0.5)
     ctx.set_source_rgb(1, 1, 1)
     ctx.stroke_preserve()
     ctx.set_source_rgb(col[0],col[1],col[2])
-    ctx.set_line_width(w*0.8)
-    ctx.set_dash([3.0, 4.5])
+    ctx.set_line_width(w*0.4)
+    ctx.set_dash([3.0, 3.0])
     ctx.stroke()
 def stroke_two_lines(ctx,w,col):
     ctx.set_line_width(w)
     ctx.set_source_rgb(col[0],col[1],col[2])
     ctx.stroke_preserve()
-    ctx.set_line_width(w*0.5)
+    ctx.set_line_width(w*0.3)
     ctx.set_source_rgb(1, 1, 1)
     ctx.stroke()
 
@@ -157,7 +176,7 @@ def render():
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         ctx.set_line_join(cairo.LINE_JOIN_ROUND)
         ctx.save()
-        draw_rounded(ctx, 0,0,width,height, 8)
+        #draw_rounded(ctx, 0,0,width,height, 8)
         ctx.set_source_rgb(1, 1, 1)  # Solid color
         ctx.fill_preserve()
         ctx.set_source_rgb(0, 0, 0)  # Solid color
@@ -175,9 +194,9 @@ def render():
     # use rsvg to render the cairo context                                      
 
 render()
-A4Positions = [[18+187*(i%3),18+(i//3)*268] for i in range (9)]
+A4Positions = [[18+185*(i%3),18+(i//3)*266] for i in range (9)]
 def collateA4():
-    width,height =  595,842
+    width,height =  595.27559,841.88976
     surfaces = [cairo.PDFSurface('./out/4x4_collate'+str(x+1)+'.pdf', width,height) for x in range(29)]
     contexts = [cairo.Context(surface) for surface in surfaces]
     handle = Rsvg.Handle()
@@ -191,7 +210,7 @@ def collateA4():
         contexts[i//9].restore()
 collateA4()
 def collatedBack():
-    width,height =  595,842
+    width,height =  595.27559,841.88976
     surface = cairo.PDFSurface('./out/back_print_4x4.pdf', width,height)
     context = cairo.Context(surface)
     handle = Rsvg.Handle()
